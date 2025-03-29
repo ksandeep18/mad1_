@@ -643,9 +643,9 @@ def take_quiz(quiz_id):
         return redirect(url_for('quiz_list'))
     
     # Parse options from string to list for each question
-    import ast
     for question in questions:
-        question.options_list = ast.literal_eval(question.options)
+        # Use our custom from_json filter
+        question.options_list = from_json_filter(question.options)
     
     return render_template('user/take_quiz.html', quiz=quiz, questions=questions)
 
@@ -732,9 +732,9 @@ def quiz_results(score_id):
         .all()
     
     # Parse options from string to list for each question
-    import ast
     for _, question in user_answers:
-        question.options_list = ast.literal_eval(question.options)
+        # Use our custom from_json filter
+        question.options_list = from_json_filter(question.options)
     
     return render_template('user/quiz_results.html',
                           score=score,
