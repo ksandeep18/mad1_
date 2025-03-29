@@ -45,6 +45,13 @@ def from_json_filter(value):
         except:
             # If all parsing fails, return an empty list
             return []
+            
+@app.template_filter('slice')
+def slice_filter(value, start, end=None):
+    """Return a slice of the list."""
+    if end is None:
+        return value[start:]
+    return value[start:end]
 
 # Initialize extensions
 db.init_app(app)
@@ -492,6 +499,29 @@ def manage_users():
         users = User.query.filter_by(is_admin=False).all()
     
     return render_template('admin/manage_users.html', users=users, search_query=search_query)
+
+@app.route('/admin/users/delete/<int:id>', methods=['POST'])
+@login_required
+def delete_user(id):
+    if not current_user.is_admin:
+        flash('Access denied. Admin privileges required.', 'danger')
+        return redirect(url_for('index'))
+    
+    user = User.query.get_or_404(id)
+    
+    if user.is_admin:
+        flash('Cannot delete an admin user.', 'danger')
+        return redirect(url_for('manage_users'))
+    
+    try:
+        db.session.delete(user)
+        db.session.commit()
+        flash(f'User "{user.username}" has been deleted successfully.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting user: {str(e)}', 'danger')
+    
+    return redirect(url_for('manage_users'))
 
 @app.route('/admin/analytics')
 @login_required

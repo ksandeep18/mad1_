@@ -104,10 +104,16 @@
                                                                         <p><strong>Quizzes Taken:</strong> {{ score_count }}</p>
                                                                         
                                                                         {% if score_count > 0 %}
-                                                                            {% set avg_score = user.scores.with_entities(func.avg(Score.total_score)).scalar() %}
+                                                                            {% set scores_list = user.scores.all() %}
+                                                                            {% set total_score = 0 %}
+                                                                            {% for score in scores_list %}
+                                                                                {% set total_score = total_score + score.total_score %}
+                                                                            {% endfor %}
+                                                                            {% set avg_score = total_score / scores_list|length %}
                                                                             <p><strong>Average Score:</strong> {{ "%.1f"|format(avg_score) }}%</p>
                                                                             
-                                                                            {% set last_quiz = user.scores.order_by(Score.timestamp.desc()).first() %}
+                                                                            {% set scores_sorted = user.scores.all()|sort(attribute='timestamp', reverse=true) %}
+                                                                            {% set last_quiz = scores_sorted[0] if scores_sorted else None %}
                                                                             <p><strong>Last Quiz:</strong> {{ last_quiz.quiz.title }}</p>
                                                                             <p><strong>Last Activity:</strong> {{ last_quiz.timestamp.strftime('%d %b %Y, %H:%M') }}</p>
                                                                         {% else %}
@@ -130,7 +136,7 @@
                                                                                 </tr>
                                                                             </thead>
                                                                             <tbody>
-                                                                                {% for score in user.scores.order_by(Score.timestamp.desc()).limit(5).all() %}
+                                                                                {% for score in user.scores.all()|sort(attribute='timestamp', reverse=true)|slice(0, 5) %}
                                                                                     <tr>
                                                                                         <td>{{ score.timestamp.strftime('%d %b %Y, %H:%M') }}</td>
                                                                                         <td>{{ score.quiz.title }}</td>
@@ -179,8 +185,10 @@
                                                             </div>
                                                             <div class="modal-footer">
                                                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                                <!-- Note: Add route for delete_user to app.py -->
-                                                                <button type="button" class="btn btn-danger">Delete</button>
+                                                                <form action="{{ url_for('delete_user', id=user.id) }}" method="POST" class="d-inline">
+                                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                                                </form>
                                                             </div>
                                                         </div>
                                                     </div>
