@@ -4,6 +4,7 @@ import datetime
 from flask import Flask, render_template, redirect, url_for, flash, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
+from flask_wtf.csrf import CSRFProtect
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.security import check_password_hash
 from sqlalchemy import func, desc
@@ -34,6 +35,8 @@ db.init_app(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
+csrf = CSRFProtect()
+csrf.init_app(app)
 
 # Import models and forms after initializing db to avoid circular imports
 with app.app_context():
