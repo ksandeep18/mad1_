@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ quiz.title }} - Quiz Master{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="mb-4 d-flex justify-content-between align-items-center">
+        <h1>{{ quiz.title }}</h1>
+        <div class="timer-container" id="timer">
+            {{ quiz.duration }}:00
+        </div>
+    </div>
+    
+    <p class="lead mb-4">{{ quiz.chapter.subject.name }} - {{ quiz.chapter.name }}</p>
+    
+    <div class="card border-0 mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h5 class="mb-1">Quiz Information</h5>
+                </div>
+                <div>
+                    <span class="badge bg-info me-2">
+                        <i class="fas fa-clock me-1"></i>{{ quiz.duration }} minutes
+                    </span>
+                    <span class="badge bg-secondary">
+                        <i class="fas fa-question-circle me-1"></i>{{ questions|length }} questions
+                    </span>
+                </div>
+            </div>
+            <p>{{ quiz.description }}</p>
+        </div>
+    </div>
+    
+    <form id="quiz-form" method="POST" action="{{ url_for('submit_quiz', quiz_id=quiz.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        
+        <div id="quiz-container" data-duration="{{ quiz.duration }}">
+            {% for question in questions %}
+                <div id="question-{{ question.id }}" class="card border-0 mb-4 question-container">
+                    <div class="card-body">
+                        <h5 class="card-title">Question {{ loop.index }}</h5>
+                        <p class="card-text">{{ question.question_text }}</p>
+                        
+                        <div class="mt-3">
+                            {% for option in question.options_list %}
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input visually-hidden" type="radio" 
+                                          name="question_{{ question.id }}" 
+                                          id="option_{{ question.id }}_{{ loop.index0 }}" 
+                                          value="{{ loop.index0 }}" 
+                                          required>
+                                    <label class="option-label" for="option_{{ question.id }}_{{ loop.index0 }}">
+                                        {{ option }}
+                                    </label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="d-grid gap-2 col-md-6 mx-auto mb-5">
+            <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fas fa-paper-plane me-2"></i>Submit Quiz
+            </button>
+            <a href="{{ url_for('quiz_list') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-times me-2"></i>Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize quiz timer
+        const quizDuration = {{ quiz.duration }};
+        initQuizTimer(quizDuration);
+    });
+</script>
+{% endblock %}
+{% endblock %}

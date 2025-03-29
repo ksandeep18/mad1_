@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Users - Quiz Master{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1>Manage Users</h1>
+            <p class="lead">View and manage user accounts on the platform</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0">
+                <div class="card-header bg-dark d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">User Management</h5>
+                    <form action="{{ url_for('manage_users') }}" method="GET" class="search-form d-flex">
+                        <div class="input-group">
+                            <input type="text" name="search" class="form-control" placeholder="Search by username or name..." value="{{ search_query }}">
+                            <button class="btn btn-outline-light" type="submit">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-body p-0">
+                    {% if users %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Username</th>
+                                        <th>Full Name</th>
+                                        <th>Qualification</th>
+                                        <th>Date of Birth</th>
+                                        <th>Activity</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user in users %}
+                                        <tr>
+                                            <td>{{ user.id }}</td>
+                                            <td>{{ user.username }}</td>
+                                            <td>{{ user.full_name }}</td>
+                                            <td>{{ user.qualification or 'N/A' }}</td>
+                                            <td>{{ user.dob.strftime('%d %b %Y') if user.dob else 'N/A' }}</td>
+                                            <td>
+                                                {% set score_count = user.scores.count() %}
+                                                {% if score_count > 0 %}
+                                                    <span class="badge bg-success">{{ score_count }} quizzes taken</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">No activity</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="dropdown">
+                                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="userActionsDropdown{{ user.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                                        Actions
+                                                    </button>
+                                                    <ul class="dropdown-menu" aria-labelledby="userActionsDropdown{{ user.id }}">
+                                                        <li>
+                                                            <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#viewUserModal{{ user.id }}">
+                                                                <i class="fas fa-eye me-2"></i>View Details
+                                                            </button>
+                                                        </li>
+                                                        <li><hr class="dropdown-divider"></li>
+                                                        <li>
+                                                            <button type="button" class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#deleteUserModal{{ user.id }}">
+                                                                <i class="fas fa-trash me-2"></i>Delete User
+                                                            </button>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                                
+                                                <!-- View User Modal -->
+                                                <div class="modal fade" id="viewUserModal{{ user.id }}" tabindex="-1" aria-labelledby="viewUserModalLabel{{ user.id }}" aria-hidden="true">
+                                                    <div class="modal-dialog modal-lg">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title" id="viewUserModalLabel{{ user.id }}">User Details: {{ user.username }}</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <div class="row mb-4">
+                                                                    <div class="col-md-6">
+                                                                        <h6>Basic Information</h6>
+                                                                        <p><strong>Username:</strong> {{ user.username }}</p>
+                                                                        <p><strong>Full Name:</strong> {{ user.full_name }}</p>
+                                                                        <p><strong>Qualification:</strong> {{ user.qualification or 'N/A' }}</p>
+                                                                        <p><strong>Date of Birth:</strong> {{ user.dob.strftime('%d %b %Y') if user.dob else 'N/A' }}</p>
+                                                                    </div>
+                                                                    <div class="col-md-6">
+                                                                        <h6>Quiz Statistics</h6>
+                                                                        {% set score_count = user.scores.count() %}
+                                                                        <p><strong>Quizzes Taken:</strong> {{ score_count }}</p>
+                                                                        
+                                                                        {% if score_count > 0 %}
+                                                                            {% set avg_score = user.scores.with_entities(func.avg(Score.total_score)).scalar() %}
+                                                                            <p><strong>Average Score:</strong> {{ "%.1f"|format(avg_score) }}%</p>
+                                                                            
+                                                                            {% set last_quiz = user.scores.order_by(Score.timestamp.desc()).first() %}
+                                                                            <p><strong>Last Quiz:</strong> {{ last_quiz.quiz.title }}</p>
+                                                                            <p><strong>Last Activity:</strong> {{ last_quiz.timestamp.strftime('%d %b %Y, %H:%M') }}</p>
+                                                                        {% else %}
+                                                                            <p><strong>Average Score:</strong> N/A</p>
+                                                                            <p><strong>Last Quiz:</strong> N/A</p>
+                                                                            <p><strong>Last Activity:</strong> N/A</p>
+                                                                        {% endif %}
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                {% if score_count > 0 %}
+                                                                    <h6>Recent Quiz Activity</h6>
+                                                                    <div class="table-responsive">
+                                                                        <table class="table table-sm">
+                                                                            <thead>
+                                                                                <tr>
+                                                                                    <th>Date</th>
+                                                                                    <th>Quiz</th>
+                                                                                    <th>Score</th>
+                                                                                </tr>
+                                                                            </thead>
+                                                                            <tbody>
+                                                                                {% for score in user.scores.order_by(Score.timestamp.desc()).limit(5).all() %}
+                                                                                    <tr>
+                                                                                        <td>{{ score.timestamp.strftime('%d %b %Y, %H:%M') }}</td>
+                                                                                        <td>{{ score.quiz.title }}</td>
+                                                                                        <td>
+                                                                                            <div class="d-flex align-items-center">
+                                                                                                <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                                                                                                    <div class="progress-bar 
+                                                                                                        {% if score.total_score >= 70 %}bg-success
+                                                                                                        {% elif score.total_score >= 40 %}bg-warning
+                                                                                                        {% else %}bg-danger{% endif %}" 
+                                                                                                        role="progressbar" 
+                                                                                                        style="width: {{ score.total_score }}%;"
+                                                                                                        aria-valuenow="{{ score.total_score }}" 
+                                                                                                        aria-valuemin="0" 
+                                                                                                        aria-valuemax="100">
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                                <span>{{ "%.1f"|format(score.total_score) }}%</span>
+                                                                                            </div>
+                                                                                        </td>
+                                                                                    </tr>
+                                                                                {% endfor %}
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </div>
+                                                                {% endif %}
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Delete User Modal -->
+                                                <div class="modal fade" id="deleteUserModal{{ user.id }}" tabindex="-1" aria-labelledby="deleteUserModalLabel{{ user.id }}" aria-hidden="true">
+                                                    <div class="modal-dialog">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title" id="deleteUserModalLabel{{ user.id }}">Confirm Delete</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <p>Are you sure you want to delete the user <strong>{{ user.username }}</strong>?</p>
+                                                                <p class="text-danger">This will permanently remove the user and all their quiz attempts. This action cannot be undone.</p>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                                <!-- Note: Add route for delete_user to app.py -->
+                                                                <button type="button" class="btn btn-danger">Delete</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-users fa-4x text-muted mb-3"></i>
+                            <h4>No Users Found</h4>
+                            <p class="text-muted">
+                                {% if search_query %}
+                                    No users match your search criteria.
+                                    <a href="{{ url_for('manage_users') }}">Clear search</a>
+                                {% else %}
+                                    There are no non-admin users registered on the platform.
+                                {% endif %}
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

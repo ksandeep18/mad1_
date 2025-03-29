@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Subjects - Quiz Master{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1>Manage Subjects</h1>
+            <p class="lead">Add, edit, and delete subjects for your quizzes</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <!-- Subject Form Card -->
+            <div class="card border-0">
+                <div class="card-header bg-dark">
+                    <h5 class="mb-0">{% if edit_mode %}Edit Subject{% else %}Add New Subject{% endif %}</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{% if edit_mode %}{{ url_for('edit_subject', id=subject.id) }}{% else %}{{ url_for('manage_subjects') }}{% endif %}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            <label for="name" class="form-label">{{ form.name.label }}</label>
+                            {{ form.name(class="form-control", id="name", placeholder="Enter subject name") }}
+                            {% for error in form.name.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">{{ form.description.label }}</label>
+                            {{ form.description(class="form-control", id="description", rows="4", placeholder="Enter subject description") }}
+                            {% for error in form.description.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            {{ form.submit(class="btn btn-primary") }}
+                            {% if edit_mode %}
+                                <a href="{{ url_for('manage_subjects') }}" class="btn btn-outline-secondary">Cancel</a>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8 mb-4">
+            <!-- Subjects List Card -->
+            <div class="card border-0">
+                <div class="card-header bg-dark d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Subject List</h5>
+                    <form action="{{ url_for('manage_subjects') }}" method="GET" class="search-form d-flex">
+                        <div class="input-group">
+                            <input type="text" name="search" class="form-control" placeholder="Search subjects..." value="{{ search_query }}">
+                            <button class="btn btn-outline-light" type="submit">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-body p-0">
+                    {% if subjects %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Description</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for subject in subjects %}
+                                        <tr>
+                                            <td>{{ subject.id }}</td>
+                                            <td>{{ subject.name }}</td>
+                                            <td>
+                                                {% if subject.description %}
+                                                    {{ subject.description|truncate(50) }}
+                                                {% else %}
+                                                    <span class="text-muted">No description</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <a href="{{ url_for('edit_subject', id=subject.id) }}" class="btn btn-outline-primary">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteSubjectModal{{ subject.id }}">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                                
+                                                <!-- Delete Confirmation Modal -->
+                                                <div class="modal fade" id="deleteSubjectModal{{ subject.id }}" tabindex="-1" aria-labelledby="deleteSubjectModalLabel{{ subject.id }}" aria-hidden="true">
+                                                    <div class="modal-dialog">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title" id="deleteSubjectModalLabel{{ subject.id }}">Confirm Delete</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <p>Are you sure you want to delete the subject <strong>{{ subject.name }}</strong>?</p>
+                                                                <p class="text-danger">This will also delete all chapters and quizzes under this subject. This action cannot be undone.</p>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                                <form action="{{ url_for('delete_subject', id=subject.id) }}" method="POST" style="display: inline;">
+                                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-book fa-4x text-muted mb-3"></i>
+                            <h4>No Subjects Found</h4>
+                            <p class="text-muted">
+                                {% if search_query %}
+                                    No subjects match your search criteria.
+                                    <a href="{{ url_for('manage_subjects') }}">Clear search</a>
+                                {% else %}
+                                    Start by adding a new subject using the form.
+                                {% endif %}
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

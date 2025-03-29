@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Chapters - Quiz Master{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1>Manage Chapters</h1>
+            <p class="lead">Organize your subjects into chapters for better organization</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <!-- Chapter Form Card -->
+            <div class="card border-0">
+                <div class="card-header bg-dark">
+                    <h5 class="mb-0">{% if edit_mode %}Edit Chapter{% else %}Add New Chapter{% endif %}</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{% if edit_mode %}{{ url_for('edit_chapter', id=chapter.id) }}{% else %}{{ url_for('manage_chapters') }}{% endif %}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            <label for="subject_id" class="form-label">{{ form.subject_id.label }}</label>
+                            {{ form.subject_id(class="form-select", id="subject_id") }}
+                            {% for error in form.subject_id.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="name" class="form-label">{{ form.name.label }}</label>
+                            {{ form.name(class="form-control", id="name", placeholder="Enter chapter name") }}
+                            {% for error in form.name.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">{{ form.description.label }}</label>
+                            {{ form.description(class="form-control", id="description", rows="4", placeholder="Enter chapter description") }}
+                            {% for error in form.description.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            {{ form.submit(class="btn btn-primary") }}
+                            {% if edit_mode %}
+                                <a href="{{ url_for('manage_chapters') }}" class="btn btn-outline-secondary">Cancel</a>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8 mb-4">
+            <!-- Chapters List Card -->
+            <div class="card border-0">
+                <div class="card-header bg-dark">
+                    <div class="row align-items-center">
+                        <div class="col-md-4">
+                            <h5 class="mb-0">Chapter List</h5>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="d-flex justify-content-end">
+                                <form action="{{ url_for('manage_chapters') }}" method="GET" class="row g-2">
+                                    <div class="col-auto">
+                                        <select name="subject_id" class="form-select form-select-sm">
+                                            <option value="">All Subjects</option>
+                                            {% for subject in subjects %}
+                                                <option value="{{ subject.id }}" {% if subject_filter == subject.id %}selected{% endif %}>
+                                                    {{ subject.name }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" name="search" class="form-control" placeholder="Search chapters..." value="{{ search_query }}">
+                                            <button class="btn btn-outline-light" type="submit">
+                                                <i class="fas fa-search"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if chapters %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Subject</th>
+                                        <th>Description</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for chapter, subject_name in chapters %}
+                                        <tr>
+                                            <td>{{ chapter.id }}</td>
+                                            <td>{{ chapter.name }}</td>
+                                            <td>{{ subject_name }}</td>
+                                            <td>
+                                                {% if chapter.description %}
+                                                    {{ chapter.description|truncate(50) }}
+                                                {% else %}
+                                                    <span class="text-muted">No description</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <a href="{{ url_for('edit_chapter', id=chapter.id) }}" class="btn btn-outline-primary">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteChapterModal{{ chapter.id }}">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                                
+                                                <!-- Delete Confirmation Modal -->
+                                                <div class="modal fade" id="deleteChapterModal{{ chapter.id }}" tabindex="-1" aria-labelledby="deleteChapterModalLabel{{ chapter.id }}" aria-hidden="true">
+                                                    <div class="modal-dialog">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title" id="deleteChapterModalLabel{{ chapter.id }}">Confirm Delete</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <p>Are you sure you want to delete the chapter <strong>{{ chapter.name }}</strong>?</p>
+                                                                <p class="text-danger">This will also delete all quizzes under this chapter. This action cannot be undone.</p>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                                <form action="{{ url_for('delete_chapter', id=chapter.id) }}" method="POST" style="display: inline;">
+                                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-bookmark fa-4x text-muted mb-3"></i>
+                            <h4>No Chapters Found</h4>
+                            <p class="text-muted">
+                                {% if search_query or subject_filter %}
+                                    No chapters match your filter criteria.
+                                    <a href="{{ url_for('manage_chapters') }}">Clear filters</a>
+                                {% else %}
+                                    Start by adding a new chapter using the form.
+                                {% endif %}
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

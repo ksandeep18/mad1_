@@ -1,0 +1,116 @@
+/* Custom styles for the Quiz Platform */
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.main-content {
+    flex: 1;
+}
+
+.footer {
+    margin-top: auto;
+}
+
+/* Quiz styles */
+.question-container {
+    border-left: 4px solid var(--bs-secondary);
+    padding-left: 15px;
+    margin-bottom: 20px;
+    transition: border-color 0.3s ease;
+}
+
+.question-container.answered {
+    border-left-color: var(--bs-success);
+}
+
+.timer-container {
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-align: center;
+    padding: 10px;
+    background-color: var(--bs-dark);
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+/* Dashboard cards */
+.dashboard-card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Quiz result styles */
+.correct-answer {
+    background-color: rgba(25, 135, 84, 0.1);
+    border-left: 4px solid var(--bs-success);
+}
+
+.incorrect-answer {
+    background-color: rgba(220, 53, 69, 0.1);
+    border-left: 4px solid var(--bs-danger);
+}
+
+/* Chart container */
+.chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+    margin-bottom: 30px;
+}
+
+/* Subject/Chapter/Quiz cards */
+.item-card {
+    transition: transform 0.2s;
+    height: 100%;
+}
+
+.item-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Admin panel styles */
+.admin-sidebar {
+    min-height: calc(100vh - 56px);
+    background-color: var(--bs-dark);
+}
+
+.nav-link.active {
+    background-color: var(--bs-primary) !important;
+}
+
+/* Logo and branding */
+.logo {
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+/* Search bar */
+.search-form {
+    max-width: 400px;
+}
+
+/* Radio button styling for questions */
+.option-label {
+    display: block;
+    padding: 10px 15px;
+    background-color: var(--bs-gray-800);
+    border-radius: 5px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.option-label:hover {
+    background-color: var(--bs-gray-700);
+}
+
+input[type="radio"]:checked + .option-label {
+    background-color: var(--bs-primary);
+}

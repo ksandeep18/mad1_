@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block title %}Quiz Master - Home{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row align-items-center py-5">
+        <div class="col-lg-6">
+            <h1 class="display-4 fw-bold">Welcome to Quiz Master</h1>
+            <p class="lead my-4">
+                Enhance your knowledge with our interactive quiz platform. Test your skills, track your progress, and improve your understanding of various subjects.
+            </p>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-4">
+                {% if current_user.is_authenticated %}
+                    {% if current_user.is_admin %}
+                        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary btn-lg px-4 me-md-2">
+                            <i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('user_dashboard') }}" class="btn btn-primary btn-lg px-4 me-md-2">
+                            <i class="fas fa-tachometer-alt me-2"></i>My Dashboard
+                        </a>
+                        <a href="{{ url_for('quiz_list') }}" class="btn btn-outline-secondary btn-lg px-4">
+                            <i class="fas fa-list me-2"></i>Browse Quizzes
+                        </a>
+                    {% endif %}
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg px-4 me-md-2">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                    </a>
+                    <a href="{{ url_for('register') }}" class="btn btn-outline-secondary btn-lg px-4">
+                        <i class="fas fa-user-plus me-2"></i>Register
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="text-center">
+                <svg class="img-fluid" width="500" height="400" xmlns="http://www.w3.org/2000/svg" role="img">
+                    <rect width="100%" height="100%" fill="#212529"/>
+                    <g transform="translate(250, 200)">
+                        <g transform="scale(8)">
+                            <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8z" fill="#0d6efd"/>
+                            <path d="M12 6c-3.3 0-6 2.7-6 6s2.7 6 6 6 6-2.7 6-6-2.7-6-6-6zm0 10c-2.2 0-4-1.8-4-4s1.8-4 4-4 4 1.8 4 4-1.8 4-4 4z" fill="#198754"/>
+                            <path d="M12 8c-2.2 0-4 1.8-4 4s1.8 4 4 4 4-1.8 4-4-1.8-4-4-4zm0 6c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z" fill="#ffc107"/>
+                        </g>
+                        <text x="-120" y="90" fill="#ffffff" font-size="24">Quiz Master</text>
+                    </g>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="row my-5">
+        <div class="col-12 text-center">
+            <h2 class="mb-4">Why Choose Quiz Master?</h2>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 bg-dark">
+                <div class="card-body text-center p-4">
+                    <div class="mb-3">
+                        <i class="fas fa-book-open text-primary fa-3x"></i>
+                    </div>
+                    <h5 class="card-title">Diverse Subjects</h5>
+                    <p class="card-text">Explore a wide range of subjects and topics, from science to literature, mathematics to history.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 bg-dark">
+                <div class="card-body text-center p-4">
+                    <div class="mb-3">
+                        <i class="fas fa-chart-line text-success fa-3x"></i>
+                    </div>
+                    <h5 class="card-title">Track Progress</h5>
+                    <p class="card-text">Monitor your performance over time with detailed analytics and progress tracking.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 bg-dark">
+                <div class="card-body text-center p-4">
+                    <div class="mb-3">
+                        <i class="fas fa-medal text-warning fa-3x"></i>
+                    </div>
+                    <h5 class="card-title">Challenge Yourself</h5>
+                    <p class="card-text">Push your limits with quizzes of varying difficulty levels and time constraints.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row my-5 py-4 bg-dark rounded">
+        <div class="col-12 text-center mb-4">
+            <h2>How It Works</h2>
+        </div>
+        <div class="col-md-3">
+            <div class="text-center mb-4">
+                <div class="rounded-circle bg-primary d-inline-flex justify-content-center align-items-center mb-3" style="width: 80px; height: 80px;">
+                    <i class="fas fa-user-plus text-white fa-2x"></i>
+                </div>
+                <h5>Sign Up</h5>
+                <p>Create your account to get started</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="text-center mb-4">
+                <div class="rounded-circle bg-primary d-inline-flex justify-content-center align-items-center mb-3" style="width: 80px; height: 80px;">
+                    <i class="fas fa-search text-white fa-2x"></i>
+                </div>
+                <h5>Find Quizzes</h5>
+                <p>Browse subjects and choose quizzes</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="text-center mb-4">
+                <div class="rounded-circle bg-primary d-inline-flex justify-content-center align-items-center mb-3" style="width: 80px; height: 80px;">
+                    <i class="fas fa-pen text-white fa-2x"></i>
+                </div>
+                <h5>Take Quizzes</h5>
+                <p>Complete quizzes and submit answers</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="text-center mb-4">
+                <div class="rounded-circle bg-primary d-inline-flex justify-content-center align-items-center mb-3" style="width: 80px; height: 80px;">
+                    <i class="fas fa-chart-bar text-white fa-2x"></i>
+                </div>
+                <h5>Track Results</h5>
+                <p>View your scores and analyze progress</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

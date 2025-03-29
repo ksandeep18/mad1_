@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Quizzes - Quiz Master{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1>Manage Quizzes</h1>
+            <p class="lead">Create, edit, and organize quizzes for your users</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <!-- Quiz Form Card -->
+            <div class="card border-0">
+                <div class="card-header bg-dark">
+                    <h5 class="mb-0">{% if edit_mode %}Edit Quiz{% else %}Add New Quiz{% endif %}</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{% if edit_mode %}{{ url_for('edit_quiz', id=quiz.id) }}{% else %}{{ url_for('manage_quizzes') }}{% endif %}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            <label for="chapter_id" class="form-label">{{ form.chapter_id.label }}</label>
+                            {{ form.chapter_id(class="form-select", id="chapter_id") }}
+                            {% for error in form.chapter_id.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="title" class="form-label">{{ form.title.label }}</label>
+                            {{ form.title(class="form-control", id="title", placeholder="Enter quiz title") }}
+                            {% for error in form.title.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">{{ form.description.label }}</label>
+                            {{ form.description(class="form-control", id="description", rows="3", placeholder="Enter quiz description") }}
+                            {% for error in form.description.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="date" class="form-label">{{ form.date.label }}</label>
+                                {{ form.date(class="form-control", id="date", type="date") }}
+                                {% for error in form.date.errors %}
+                                    <div class="text-danger">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="duration" class="form-label">{{ form.duration.label }}</label>
+                                {{ form.duration(class="form-control", id="duration", type="number", min="1") }}
+                                {% for error in form.duration.errors %}
+                                    <div class="text-danger">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            {{ form.submit(class="btn btn-primary") }}
+                            {% if edit_mode %}
+                                <a href="{{ url_for('manage_quizzes') }}" class="btn btn-outline-secondary">Cancel</a>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8 mb-4">
+            <!-- Quizzes List Card -->
+            <div class="card border-0">
+                <div class="card-header bg-dark">
+                    <div class="row align-items-center">
+                        <div class="col-md-4">
+                            <h5 class="mb-0">Quiz List</h5>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="d-flex justify-content-end">
+                                <form action="{{ url_for('manage_quizzes') }}" method="GET" class="row g-2">
+                                    <div class="col-auto">
+                                        <select name="chapter_id" class="form-select form-select-sm">
+                                            <option value="">All Chapters</option>
+                                            {% for chapter in chapters %}
+                                                <option value="{{ chapter.id }}" {% if chapter_filter == chapter.id %}selected{% endif %}>
+                                                    {{ chapter.name }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" name="search" class="form-control" placeholder="Search quizzes..." value="{{ search_query }}">
+                                            <button class="btn btn-outline-light" type="submit">
+                                                <i class="fas fa-search"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if quizzes %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Title</th>
+                                        <th>Chapter</th>
+                                        <th>Subject</th>
+                                        <th>Date</th>
+                                        <th>Duration</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for quiz, chapter_name, subject_name in quizzes %}
+                                        <tr>
+                                            <td>{{ quiz.id }}</td>
+                                            <td>{{ quiz.title }}</td>
+                                            <td>{{ chapter_name }}</td>
+                                            <td>{{ subject_name }}</td>
+                                            <td>{{ quiz.date.strftime('%d %b %Y') }}</td>
+                                            <td>{{ quiz.duration }} min</td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <a href="{{ url_for('manage_questions', quiz_id=quiz.id) }}" class="btn btn-outline-info" title="Manage Questions">
+                                                        <i class="fas fa-question-circle"></i>
+                                                    </a>
+                                                    <a href="{{ url_for('edit_quiz', id=quiz.id) }}" class="btn btn-outline-primary" title="Edit Quiz">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteQuizModal{{ quiz.id }}" title="Delete Quiz">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                                
+                                                <!-- Delete Confirmation Modal -->
+                                                <div class="modal fade" id="deleteQuizModal{{ quiz.id }}" tabindex="-1" aria-labelledby="deleteQuizModalLabel{{ quiz.id }}" aria-hidden="true">
+                                                    <div class="modal-dialog">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title" id="deleteQuizModalLabel{{ quiz.id }}">Confirm Delete</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <p>Are you sure you want to delete the quiz <strong>{{ quiz.title }}</strong>?</p>
+                                                                <p class="text-danger">This will also delete all questions and user attempts for this quiz. This action cannot be undone.</p>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                                <form action="{{ url_for('delete_quiz', id=quiz.id) }}" method="POST" style="display: inline;">
+                                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-clipboard-list fa-4x text-muted mb-3"></i>
+                            <h4>No Quizzes Found</h4>
+                            <p class="text-muted">
+                                {% if search_query or chapter_filter %}
+                                    No quizzes match your filter criteria.
+                                    <a href="{{ url_for('manage_quizzes') }}">Clear filters</a>
+                                {% else %}
+                                    Start by adding a new quiz using the form.
+                                {% endif %}
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
