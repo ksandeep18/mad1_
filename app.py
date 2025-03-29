@@ -1,6 +1,8 @@
 import os
 import logging
 import datetime
+import json
+import ast
 from flask import Flask, render_template, redirect, url_for, flash, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
@@ -29,6 +31,20 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_pre_ping": True,
 }
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+# Custom Jinja2 filters
+@app.template_filter('from_json')
+def from_json_filter(value):
+    try:
+        # First try to parse as JSON
+        return json.loads(value)
+    except:
+        try:
+            # If JSON parsing fails, try ast.literal_eval
+            return ast.literal_eval(value)
+        except:
+            # If all parsing fails, return an empty list
+            return []
 
 # Initialize extensions
 db.init_app(app)
